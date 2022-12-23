@@ -342,6 +342,8 @@ class Choices implements Choices {
     this._createElements();
     this._createStructure();
 
+    this._initialState = this._store.state;
+
     this._store.subscribe(this._render);
 
     this._render();
