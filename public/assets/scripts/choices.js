@@ -3895,7 +3895,7 @@
         Choices.prototype.clearStore = function () {
             this.itemList.element.replaceChildren('');
             this.choiceList.element.replaceChildren('');
-            this._clearNotice();
+            this._stopSearch();
             this._store.reset();
             this._lastAddedChoiceId = 0;
             this._lastAddedGroupId = 0;
@@ -3906,10 +3906,7 @@
         Choices.prototype.clearInput = function () {
             var shouldSetInputWidth = !this._isSelectOneElement;
             this.input.clear(shouldSetInputWidth);
-            this._clearNotice();
-            if (this._isSearching) {
-                this._stopSearch();
-            }
+            this._stopSearch();
             return this;
         };
         Choices.prototype._validateConfig = function () {
@@ -4021,18 +4018,14 @@
                     renderChoices(renderableChoices(activeChoices), false, undefined);
                 }
             }
-            var notice = this._notice;
             if (!selectableChoices) {
-                if (!notice) {
+                if (!this._notice) {
                     this._notice = {
-                        text: resolveStringFunction(config.noChoicesText),
-                        type: NoticeTypes.noChoices,
+                        text: resolveStringFunction(isSearching ? config.noResultsText : config.noChoicesText),
+                        type: isSearching ? NoticeTypes.noResults : NoticeTypes.noChoices,
                     };
                 }
                 fragment.replaceChildren('');
-            }
-            else if (notice && notice.type === NoticeTypes.noChoices) {
-                this._notice = undefined;
             }
             this._renderNotice(fragment);
             this.choiceList.element.replaceChildren(fragment);
@@ -4428,6 +4421,7 @@
             this._currentValue = '';
             this._isSearching = false;
             if (wasSearching) {
+                this._clearNotice();
                 this._store.dispatch(activateChoices(true));
                 this.passedElement.triggerEvent(EventType.search, {
                     value: '',
@@ -4579,7 +4573,6 @@
                 else {
                     this._stopSearch();
                 }
-                this._clearNotice();
                 return;
             }
             if (!this._canAddItems()) {
